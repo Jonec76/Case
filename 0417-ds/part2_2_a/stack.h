@@ -8,14 +8,16 @@ class Stack : public Bag
 {
     public:
         Stack (int stackCapacity = 10);
+        ~Stack();
         void Push(const T&);
         T Pop();
+        int Size() const;
     private:
         T* array;
 };
 
 template<class T>
-Stack<T>::~Stack ( ) 
+Stack<T>::~Stack() 
 { 
     delete [] array; 
 }
@@ -31,6 +33,11 @@ Stack<T>::Stack(int stackCapacity) : Bag(stackCapacity) {
 }
 
 template<class T>
+int Stack<T>::Size() const{
+    return size;
+}
+
+template<class T>
 void Stack<T>::Push(const T& x)
 {
     if (IsFull())
@@ -41,6 +48,7 @@ void Stack<T>::Push(const T& x)
  
     cout << "Inserting " << x << endl;
     array[++top] = x;
+    size++;
 }
 
 template<class T>
@@ -54,7 +62,8 @@ T Stack<T>::Pop()
     }
  
     cout << "Removing " << array[top] << endl;
- 
+    size--;
+    
     // decrease stack size by 1 and (optionally) return the popped element
     return array[top--];
 }

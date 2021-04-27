@@ -22,6 +22,7 @@ class Queue{
         T& Rear() const;
         // return top element of stack
         void print_queue();
+    protected:
         T* queue;
         int front,
             rear,
@@ -188,7 +189,7 @@ template <class T> void DEqueue<T>::insert_rear(T key) {
 
 // // Delete element at front of DEqueue
 template <class T> void DEqueue<T>::delete_front() {
-    cout<<RED<<"\nPop front: "<<this->queue[this->front]<<RESET<<endl;
+    cout<<RED<<"Pop front: "<<this->queue[this->front]<<RESET<<endl;
     if (this->IsEmpty()) {
         cout << "Queue Underflow!!\n";
         return;

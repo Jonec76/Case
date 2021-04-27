@@ -14,9 +14,11 @@ class Bag
         virtual int Top( )const;
         void Push(const int);
         void Pop( );
+
+        int get_capacity() const;
     protected:
         int *array;
-        int capacity;
+        int capacity, size=0;
         int top;
 };
 
@@ -69,5 +71,10 @@ int Bag::Top( ) const
 	if (IsEmpty( )) throw "Stack is empty.";
 	return array[top];
 }
+
+int Bag::get_capacity() const{
+    return capacity;
+}
+
 
 

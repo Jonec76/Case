@@ -18,6 +18,7 @@ class Bag
         int *array;
         int capacity;
         int top;
+        int size=0;
 };
 
 Bag::Bag (int bagCapacity)

@@ -41,18 +41,32 @@ void merge(Queue<int> q1, Queue<int> q2){
 }
 
 int main(){
-    Queue<int> q1(10);
-    q1.Push(2);
-    
+    int* q;
+    q = new int[6];
 
+    Queue<int> q1(3);
+    q1.Push(2);
+    q1.Push(3);
+    q1.Push(5);
+    q1.Push(7);
+    cout<<"Part 2-1(a)"<<endl;
+    cout<<"Size: "<<q1.get_size()<<endl;
+    cout<<"Capacity: "<<q1.get_capacity()<<endl;
+    cout<<"Queue: ";
+    q1.get_queue(&q);
+    for(int i=0;i<6;i++){
+        cout<<q[i]<<" ";
+    }
+    cout<<endl;
+
+    cout<<"\nPart 2-1(b)"<<endl;
+    cout<<"Queue: ";
     Queue<int> q2(10);
     q2.Push(8);
-    q2.Push(5);
+    q2.Push(6);
 
     merge(q1, q2);
-    // for(int i=0;i<ans.get_size();i++){
-    //     cout<<p_res[i]<<" ";
-    // }
+    
     
 
 }

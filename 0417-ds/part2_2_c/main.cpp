@@ -4,7 +4,7 @@ using namespace std;
 
 
 int main(){
-    cout<<"Int queue: \n";
+    cout<<"Int double ended queue: \n";
     DEqueue<int>d(4);
     d.insert_front(20);
     d.insert_front(30);
