@@ -41,12 +41,12 @@ static MatrixNode* av = NULL;
 class Matrix{
     friend istream& operator>>(istream&, Matrix&);
     friend ostream& operator<<(ostream&, Matrix&);
-    friend Matrix& operator*(Matrix const &, Matrix const &);
     public:
         Matrix(){};
         Matrix(Matrix&);
         ~Matrix(); // 解構子
         int p, row, col, value;
+        Matrix& operator*(Matrix const &);
         Matrix& operator+(Matrix const &);
         vector<Triple> get_triple_table() const;
         void build_matrix(vector<Triple>, Matrix& );
@@ -89,7 +89,7 @@ Matrix Matrix::transpose() const{
 }
 
 string MatrixNode::print_triple(){
-    return to_string(triple.row)+" "+to_string(triple.col)+ " "+to_string(triple.value)+"\n";
+    return to_string(triple.col)+" "+to_string(triple.row)+ " "+to_string(triple.value)+"\n";
 }
 
 
@@ -160,10 +160,63 @@ Matrix& Matrix::operator+(Matrix const &b){
     t.value = table_sum.size();
     table_sum.insert(table_sum.begin(), t);
 
-    build_matrix(table_sum, *this);
-    return *this;
+    Matrix m_sum; 
+
+    build_matrix(table_sum, m_sum);
+    return m_sum;
 };
 
+
+Matrix& Matrix::operator*(Matrix const &b){
+    Matrix sum;
+    
+    if(col!=b.row){
+        cout<<"Mismatch dimension.";
+        return *this;
+    }
+
+    vector<Triple>table_a = get_triple_table();
+    vector<Triple>table_b = b.get_triple_table();
+
+    vector<Triple> table_prod;
+    int i_a=0, i_b=0;
+
+    for(int i=0;i<table_a.size();i++){
+        int a_col = table_a[i].col;
+        int a_row = table_a[i].row;
+        for(int j=0;j<table_b.size();j++){
+            int b_row = table_b[j].row;
+            int b_col = table_b[j].col;
+            if(a_col == b_row){
+                int prod = table_a[i].value * table_b[j].value;
+                bool has_init = false;
+                for(int k=0;k<table_prod.size();k++){
+                    if(table_prod[k].row == a_row && table_prod[k].col == b_col){
+                        table_prod[k].value += prod;
+                        has_init = true;
+                    }
+                }
+                if(!has_init){
+                    Triple t;
+                    t.col = b_col;
+                    t.row = a_row;
+                    t.value = prod;
+                    table_prod.push_back(t);
+                }
+            }
+        }
+    }
+
+    Triple t;
+    t.row = row;
+    t.col = b.col;
+    t.value = table_prod.size();
+    table_prod.insert(table_prod.begin(), t);
+    Matrix prod; 
+
+    build_matrix(table_prod, prod);
+    return prod;
+};
 
 vector<Triple> Matrix::get_triple_table() const{
     vector<Triple> table;
