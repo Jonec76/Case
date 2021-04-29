@@ -41,13 +41,13 @@ static MatrixNode* av = NULL;
 class Matrix{
     friend istream& operator>>(istream&, Matrix&);
     friend ostream& operator<<(ostream&, Matrix&);
-    friend Matrix operator+(Matrix const &, Matrix const &);
     friend Matrix& operator*(Matrix const &, Matrix const &);
     public:
         Matrix(){};
         Matrix(Matrix&);
         ~Matrix(); // 解構子
         int p, row, col, value;
+        Matrix& operator+(Matrix const &);
         vector<Triple> get_triple_table() const;
         void build_matrix(vector<Triple>, Matrix& );
         Matrix transpose() const;
@@ -93,22 +93,22 @@ string MatrixNode::print_triple(){
 }
 
 
-Matrix operator+(Matrix const &a, Matrix const &b){
+Matrix& Matrix::operator+(Matrix const &b){
     Matrix sum;
     
-    if(a.col!=b.col ||a.row!=b.row){
+    if(col!=b.col ||row!=b.row){
         cout<<"Mismatch dimension.";
-        return sum;
+        return *this;
     }
 
-    vector<Triple>table_a = a.get_triple_table();
+    vector<Triple>table_a = get_triple_table();
     vector<Triple>table_b = b.get_triple_table();
 
     vector<Triple> table_sum;
     int i_a=0, i_b=0;
 
-    while(i_a < a.value && i_b < b.value){
-        int one_dim_index_a = table_a[i_a].row*a.p + table_a[i_a].col;
+    while(i_a < value && i_b < b.value){
+        int one_dim_index_a = table_a[i_a].row*p + table_a[i_a].col;
         int one_dim_index_b = table_b[i_b].row*b.p + table_b[i_b].col;
         Triple t;
         if(one_dim_index_a < one_dim_index_b){
@@ -131,8 +131,8 @@ Matrix operator+(Matrix const &a, Matrix const &b){
         table_sum.push_back(t);
     }
 
-    if(i_a != a.value){
-        while(i_a < a.value){
+    if(i_a != value){
+        while(i_a < value){
             Triple t;
             t.col = table_a[i_a].col;
             t.row = table_a[i_a].row;
@@ -155,15 +155,15 @@ Matrix operator+(Matrix const &a, Matrix const &b){
     }
 
     Triple t;
-    t.col = a.col;
-    t.row = a.row;
+    t.col = col;
+    t.row = row;
     t.value = table_sum.size();
     table_sum.insert(table_sum.begin(), t);
 
-    sum.build_matrix(table_sum, sum);
-    // cout<<sum;
-    return sum;
+    build_matrix(table_sum, *this);
+    return *this;
 };
+
 
 vector<Triple> Matrix::get_triple_table() const{
     vector<Triple> table;
