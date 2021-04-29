@@ -21,8 +21,8 @@ int main(){
     // sum = sum.transpose();
     // cout<<sum;
 
-    // Matrix test(m);
-    // cout<<test;
+    Matrix test(m);
+    cout<<test;
 
     // cout<<m;
     // cout<<n;
