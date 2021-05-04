@@ -12,7 +12,10 @@ using namespace std;
  * 其實這個有點像要誤導ＸＤ並不用使用到 linked-list，這個其實是用 BFS 跑出來的一個 tree
  * 所以其實只要跑 BFS 即可，下方主要是依據 BFS 的演算法寫出來的解。
  */
-
+struct node{
+    int row, col, value;
+    struct node* left,* right, *up, *down;
+};
 
 int ROW, COL;
 
@@ -40,6 +43,10 @@ void BFS(int** grid, bool** vis,
     pair<int, int>first_node;
     first_node.first = row;
     first_node.second = col;
+    struct node* head = new struct node;
+    head->row = row;
+    head->col = col;
+    head->value = value;
 
     if(grid[row][col] == -1){
         cout<<0<<"\n";
