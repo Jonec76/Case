@@ -138,9 +138,10 @@ class Polynomial{
     public:
         friend istream& operator>>(istream&, Polynomial&); 
         friend ostream& operator<<(ostream&, Polynomial&); 
-        Polynomial& operator=(const Polynomial& a);
+        Polynomial& operator=(const Polynomial& b) const;
         Polynomial& operator+(const Polynomial& b) const;
         Polynomial& operator-(const Polynomial& b) const;
+        Polynomial& operator*(const Polynomial& b) const;
         Polynomial(const Polynomial&);
         Polynomial(){};
         ~Polynomial(); // call poly deconstructure would cause circularlist deconstructure as well;
@@ -182,19 +183,21 @@ ostream& operator<<(ostream& out, Polynomial& p){
     }
  }
 
-Polynomial& Polynomial::operator=(const Polynomial& a){
+Polynomial& Polynomial::operator=(const Polynomial& a) const{
+    Polynomial* c = new Polynomial();
+
     int len = a.poly.size;
     ChainNode<Term>* cur = a.poly.first->link;
 
     for(int i=0;i<len;i++){
-        ChainNode<Term>* x = poly.GetNode();
+        ChainNode<Term>* x = c->poly.GetNode();
 
         x->set_data(cur->get_data());
-        poly.Insert(x);
+        c->poly.Insert(x);
         cur = cur->link;
     }
-    poly.size = a.poly.size;
-    return *this;
+    c->poly.size = a.poly.size;
+    return *c;
 }
 
 Polynomial& Polynomial::operator+(const Polynomial& b) const {
@@ -246,6 +249,56 @@ Polynomial& Polynomial::operator+(const Polynomial& b) const {
 }
 
 Polynomial& Polynomial::operator-(const Polynomial& b) const {
+    Polynomial* c = new Polynomial();
+
+    ChainNode<Term>* cur1 = (*this).poly.first->link;
+    ChainNode<Term>* cur2 = b.poly.first->link;
+    int c1=0, c2=0;
+
+    while(cur1 != (*this).poly.first && cur2 != b.poly.first){
+        Term t1 = cur1->get_data();
+        Term t2 = cur2->get_data();
+        ChainNode<Term>* n = c->poly.GetNode();
+        if(t1.exp < t2.exp){
+            n->set_data(t1);
+            cur1 = cur1->link;
+        }else if(t1.exp > t2.exp){
+            t2.coef *= -1;
+            n->set_data(t2);
+            cur2 = cur2->link;
+        }else{
+            Term s;
+            s.coef = t1.coef - t2.coef;
+            s.exp = t1.exp;
+            n->set_data(s);
+            cur1 = cur1->link;
+            cur2 = cur2->link;
+        }
+        c->poly.Insert(n);
+    }
+
+    while(cur1 != (*this).poly.first){
+        Term t1 = cur1->get_data();
+        ChainNode<Term>* n = c->poly.GetNode();
+        n->set_data(t1);
+        cur1 = cur1->link;
+        c->poly.Insert(n);
+    }
+
+    while(cur2 != b.poly.first){
+        Term t2 = cur2->get_data();
+        ChainNode<Term>* n = c->poly.GetNode();
+        t2.coef *= -1;
+        n->set_data(t2);
+        cur2 = cur2->link;
+        c->poly.Insert(n);
+    }
+
+    
+    return *c;
+}
+
+Polynomial& Polynomial::operator*(const Polynomial& b) const {
     Polynomial* c = new Polynomial();
 
     ChainNode<Term>* cur1 = (*this).poly.first->link;
