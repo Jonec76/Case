@@ -39,7 +39,7 @@ class CircularList {
                 cur = cur->link;
                 ctr++;
             }
-            cout<<"av size: "<<ctr-1<<"\n";
+            cout<<"av size: "<<ctr<<"\n";
         };
         ChainNode<T>* GetNode();
         void RetNode(ChainNode<T>*& );
@@ -143,6 +143,7 @@ class Polynomial{
     public:
         friend istream& operator>>(istream&, Polynomial&); 
         friend ostream& operator<<(ostream&, Polynomial&); 
+        Polynomial& operator+=(const Polynomial& b);
         Polynomial& operator=(const Polynomial& b) const;
         Polynomial& operator+(const Polynomial& b) const;
         Polynomial& operator-(const Polynomial& b) const;
@@ -186,6 +187,23 @@ ostream& operator<<(ostream& out, Polynomial& p){
         cur = cur->link;
     }
  }
+
+
+Polynomial& Polynomial::operator+=(const Polynomial& b){
+    Polynomial* c = new Polynomial(*this + b);
+    this->~Polynomial();
+    int len = c->poly.size;
+    this->poly.size = len;
+    ChainNode<Term>* cur = c->poly.first->link;
+    for(int i=0;i<len;i++){
+        ChainNode<Term>* x = this->poly.GetNode();
+        x->set_data(cur->get_data());
+        this->poly.Insert(x);
+        cur = cur->link;
+    }
+    return *this;
+}
+
 
 Polynomial& Polynomial::operator=(const Polynomial& a) const{
     Polynomial* c = new Polynomial();
@@ -314,50 +332,36 @@ Polynomial& Polynomial::operator-(const Polynomial& b) const {
 Polynomial& Polynomial::operator*(const Polynomial& b) const {
     Polynomial* c = new Polynomial();
 
-    ChainNode<Term>* cur1 = (*this).poly.first->link;
-    ChainNode<Term>* cur2 = b.poly.first->link;
+    ChainNode<Term>* cur1 = this->poly.first->link;
     int c1=0, c2=0;
 
-    while(cur1 != (*this).poly.first && cur2 != b.poly.first){
+    while(cur1 != this->poly.first){
+        Polynomial* tmp = new Polynomial();
+        ChainNode<Term>* cur2 = b.poly.first->link;
+
         Term t1 = cur1->get_data();
-        Term t2 = cur2->get_data();
-        ChainNode<Term>* n = c->poly.GetNode();
-        if(t1.exp < t2.exp){
-            n->set_data(t1);
-            cur1 = cur1->link;
-        }else if(t1.exp > t2.exp){
-            t2.coef *= -1;
-            n->set_data(t2);
-            cur2 = cur2->link;
-        }else{
-            Term s;
-            s.coef = t1.coef - t2.coef;
-            s.exp = t1.exp;
-            n->set_data(s);
-            cur1 = cur1->link;
+        int coef_a = t1.coef;
+        int exp_a = t1.exp;
+        while(cur2 != b.poly.first){
+            Term t2 = cur2->get_data();
+            int coef_b = t2.coef;
+            int exp_b = t2.exp;
+
+            int coef_prod = coef_a * coef_b;
+            int exp_prod = exp_a + exp_b;
+
+            Term prod;
+            prod.coef = coef_prod;
+            prod.exp = exp_prod;
+
+            ChainNode<Term>* n = c->poly.GetNode();
+            n->set_data(prod);
+            tmp->poly.Insert(n);
             cur2 = cur2->link;
         }
-        c->poly.Insert(n);
-    }
-
-    while(cur1 != (*this).poly.first){
-        Term t1 = cur1->get_data();
-        ChainNode<Term>* n = c->poly.GetNode();
-        n->set_data(t1);
+        *c += *tmp;
         cur1 = cur1->link;
-        c->poly.Insert(n);
     }
-
-    while(cur2 != b.poly.first){
-        Term t2 = cur2->get_data();
-        ChainNode<Term>* n = c->poly.GetNode();
-        t2.coef *= -1;
-        n->set_data(t2);
-        cur2 = cur2->link;
-        c->poly.Insert(n);
-    }
-
-    
     return *c;
 }
 
@@ -365,7 +369,7 @@ Polynomial::~Polynomial() {
     if(poly.last) {
         ChainNode<Term>* x = poly.last->link;
         poly.last->link = poly.av; // last node linked to av av = x;
-        poly.av = x;
-        poly.last = 0; 
+        poly.av = x->link;
+        poly.last = NULL; 
     }
 }

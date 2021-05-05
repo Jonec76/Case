@@ -2,10 +2,13 @@
 
 int main(){
     Polynomial a;
-    cout<<a;
+    cin>>a;
+
     Polynomial b;
-    // cout<<"---\n";
-    cout<<a+b;
-    // cout<<"---\n";
+    cin>>b;
+
+    cout<<"---\n";
+    cout<<a*b;
+    cout<<"---\n";
     // cout<<a-b;
 }
