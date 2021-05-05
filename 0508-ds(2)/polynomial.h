@@ -19,6 +19,7 @@ class ChainNode {
     friend class CircularList <T>;
     friend class Polynomial;
     public:
+        ChainNode(){link=NULL;}
         void set_data(T data){this->data = data;};
         T get_data(){return this->data;};
     private:
@@ -54,6 +55,10 @@ class CircularList {
 
 template <class T>
 void CircularList<T>::print_list(ostream& out){
+    if(size == 0){
+        out<<"Empty polynomial\n";
+        return;
+    }
     ChainNode<T>* tmp = first->link;
     while(tmp!=first){
         Term t = tmp->get_data();
@@ -172,13 +177,12 @@ ostream& operator<<(ostream& out, Polynomial& p){
 
  Polynomial::Polynomial(const Polynomial& a){
     int len = a.poly.size;
-     ChainNode<Term>* cur = a.poly.first->link;
-
+    ChainNode<Term>* cur = a.poly.first->link;
     for(int i=0;i<len;i++){
-        ChainNode<Term>* x = poly.GetNode();
+        ChainNode<Term>* x = this->poly.GetNode();
 
         x->set_data(cur->get_data());
-        poly.Insert(x);
+        this->poly.Insert(x);
         cur = cur->link;
     }
  }
@@ -202,6 +206,15 @@ Polynomial& Polynomial::operator=(const Polynomial& a) const{
 
 Polynomial& Polynomial::operator+(const Polynomial& b) const {
     Polynomial* c = new Polynomial();
+    if(b.poly.size == 0){
+        Polynomial* ret = new Polynomial(*this);
+        return *ret;
+    }else if(this->poly.size == 0){
+        Polynomial* ret = new Polynomial(b);
+        return *ret;
+    }else if(this->poly.size == 0 && b.poly.size == 0){
+        return *c;
+    }
 
     ChainNode<Term>* cur1 = (*this).poly.first->link;
     ChainNode<Term>* cur2 = b.poly.first->link;

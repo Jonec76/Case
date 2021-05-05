@@ -2,9 +2,8 @@
 
 int main(){
     Polynomial a;
-    cin >> a;
     cout<<a;
-    Polynomial b = a;
+    Polynomial b;
     // cout<<"---\n";
     cout<<a+b;
     // cout<<"---\n";
