@@ -8,7 +8,7 @@ int main(){
     cin>>b;
 
     cout<<"---\n";
-    cout<<a*b;
+    Polynomial c = a+b;
+    cout<<c;
     cout<<"---\n";
-    // cout<<a-b;
 }

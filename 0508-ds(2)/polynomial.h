@@ -1,6 +1,7 @@
 #include<iostream>
 #include<string>
 #include<vector>
+#include<math.h>
 using namespace std;
 
 template < class T > class Chain;  // 前向宣告
@@ -8,9 +9,9 @@ template < class T > class CircularList;  // 前向宣告
 class Polynomial;
 
 struct Term { 
-    int coef;
+    double coef;
     int exp;
-    Term Set(int c, int e) { coef=c; exp=e; return *this; }
+    Term Set(double c, int e) { coef=c; exp=e; return *this; }
 };
 
 template < class T >
@@ -55,7 +56,7 @@ class CircularList {
 
 template <class T>
 void CircularList<T>::print_list(ostream& out){
-    if(size == 0){
+    if(last == NULL){
         out<<"Empty polynomial\n";
         return;
     }
@@ -148,11 +149,12 @@ class Polynomial{
         Polynomial& operator+(const Polynomial& b) const;
         Polynomial& operator-(const Polynomial& b) const;
         Polynomial& operator*(const Polynomial& b) const;
+        double Evaluate(double) const;
         Polynomial(const Polynomial&);
         Polynomial(){};
         ~Polynomial(); // call poly deconstructure would cause circularlist deconstructure as well;
-    private: 
         CircularList<struct Term> poly;
+    private: 
 };
 
 
@@ -193,7 +195,6 @@ Polynomial& Polynomial::operator+=(const Polynomial& b){
     Polynomial* c = new Polynomial(*this + b);
     this->~Polynomial();
     int len = c->poly.size;
-    this->poly.size = len;
     ChainNode<Term>* cur = c->poly.first->link;
     for(int i=0;i<len;i++){
         ChainNode<Term>* x = this->poly.GetNode();
@@ -340,14 +341,14 @@ Polynomial& Polynomial::operator*(const Polynomial& b) const {
         ChainNode<Term>* cur2 = b.poly.first->link;
 
         Term t1 = cur1->get_data();
-        int coef_a = t1.coef;
+        double coef_a = t1.coef;
         int exp_a = t1.exp;
         while(cur2 != b.poly.first){
             Term t2 = cur2->get_data();
-            int coef_b = t2.coef;
+            double coef_b = t2.coef;
             int exp_b = t2.exp;
 
-            int coef_prod = coef_a * coef_b;
+            double coef_prod = coef_a * coef_b;
             int exp_prod = exp_a + exp_b;
 
             Term prod;
@@ -358,8 +359,12 @@ Polynomial& Polynomial::operator*(const Polynomial& b) const {
             n->set_data(prod);
             tmp->poly.Insert(n);
             cur2 = cur2->link;
+            // cout<<"r"<<c2<<endl;
         }
+        // tmp->poly.print_list(cout);
         *c += *tmp;
+        // (*c).poly.print_list(cout);
+        // cout<<c->poly.size<<"????";
         cur1 = cur1->link;
     }
     return *c;
@@ -371,5 +376,19 @@ Polynomial::~Polynomial() {
         poly.last->link = poly.av; // last node linked to av av = x;
         poly.av = x->link;
         poly.last = NULL; 
+        poly.size = 0;
     }
+}
+
+double Polynomial::Evaluate(double x) const{
+    ChainNode<Term>* cur = poly.first->link;
+    
+    double value = 0;
+    while(cur != poly.first){
+        Term t = cur->get_data();
+        cout<<t.coef<<" "<<t.exp<<endl;
+        value += t.coef * pow(x, t.exp);
+        cur = cur->link;
+    }
+    return value;
 }
