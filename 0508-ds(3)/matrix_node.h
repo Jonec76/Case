@@ -39,24 +39,25 @@ Triple MatrixNode::get_triple(){
 static MatrixNode* av = NULL;
 
 class Matrix{
-    friend istream& operator>>(istream&, Matrix&);
+    friend istream& operator>>(istream&, Matrix&);// (c)
     friend ostream& operator<<(ostream&, Matrix&);
     public:
+        Matrix& operator+(Matrix const &);// (a)
+        Matrix& operator*(Matrix const &);// (b)
+        Matrix& transpose() const;// (d)
+        Matrix(Matrix&);// (e)
         Matrix(){};
-        Matrix(Matrix&);
         ~Matrix(); // 解構子
         int p, row, col, value;
-        Matrix& operator*(Matrix const &);
-        Matrix& operator+(Matrix const &);
         vector<Triple> get_triple_table() const;
         void build_matrix(vector<Triple>, Matrix& );
-        Matrix transpose() const;
     private:
         MatrixNode* headnode;
 
 };
 
 Matrix::Matrix(Matrix& copy){
+    cout<<"Copy construct polynomial\n";
     vector<Triple> table = copy.get_triple_table();
     Triple t;
     t.row = copy.row;
@@ -68,8 +69,10 @@ Matrix::Matrix(Matrix& copy){
 }
 
 
-Matrix Matrix::transpose() const{
-    Matrix transpose_matrix;
+Matrix& Matrix::transpose() const{
+    cout<<"Transpose matrix\n";
+
+    Matrix* transpose_matrix = new Matrix();
     vector<Triple>table = get_triple_table();
 
     for(int i=0;i<value;i++){
@@ -84,18 +87,18 @@ Matrix Matrix::transpose() const{
     t.value = value;
     table.insert(table.begin(), t);
 
-    transpose_matrix.build_matrix(table, transpose_matrix);
-    return transpose_matrix;
+    transpose_matrix->build_matrix(table, *transpose_matrix);
+    return *transpose_matrix;
 }
 
 string MatrixNode::print_triple(){
-    return to_string(triple.col)+" "+to_string(triple.row)+ " "+to_string(triple.value)+"\n";
+    return to_string(triple.row)+" "+to_string(triple.col)+ " "+to_string(triple.value)+"\n";
 }
 
 
 Matrix& Matrix::operator+(Matrix const &b){
-    Matrix sum;
-    
+    cout<<"Add matrix\n";
+
     if(col!=b.col ||row!=b.row){
         cout<<"Mismatch dimension.";
         return *this;
@@ -160,18 +163,17 @@ Matrix& Matrix::operator+(Matrix const &b){
     t.value = table_sum.size();
     table_sum.insert(table_sum.begin(), t);
 
-    Matrix m_sum; 
+    Matrix* m_sum = new Matrix(); 
 
-    build_matrix(table_sum, m_sum);
-    return m_sum;
+    build_matrix(table_sum, *m_sum);
+    return *m_sum;
 };
 
 
 Matrix& Matrix::operator*(Matrix const &b){
-    Matrix sum;
-    
+    cout<<"Multiply matrix\n";
     if(col!=b.row){
-        cout<<"Mismatch dimension.";
+        cout<<"Mismatch dimension.\n";
         return *this;
     }
 
@@ -212,10 +214,10 @@ Matrix& Matrix::operator*(Matrix const &b){
     t.col = b.col;
     t.value = table_prod.size();
     table_prod.insert(table_prod.begin(), t);
-    Matrix prod; 
+    Matrix* prod = new Matrix(); 
 
-    build_matrix(table_prod, prod);
-    return prod;
+    build_matrix(table_prod, *prod);
+    return *prod;
 };
 
 vector<Triple> Matrix::get_triple_table() const{
@@ -242,7 +244,7 @@ ostream& operator<<(ostream& os, Matrix& matrix){
     MatrixNode* matrix_head = matrix.headnode;
     MatrixNode* cur_head = matrix.headnode;
     os<<GREEN<<"Head \n "<<RESET<<matrix_head->print_triple();
-    os<<GREEN<<"\nElement \n"<<RESET;
+    os<<GREEN<<"Element \n"<<RESET;
     cur_head = matrix_head->right; // H[0]
     
     while(cur_head != matrix_head){
@@ -253,6 +255,7 @@ ostream& operator<<(ostream& os, Matrix& matrix){
         }
         cur_head = cur_head->next;
     }
+    os<<"\n";
     return os;
 };
 
@@ -312,6 +315,8 @@ void Matrix::build_matrix(vector<Triple> table_sum, Matrix& matrix)
 
 istream& operator>>(istream& is, Matrix& matrix)
 {
+    cout<<"Read input file and build a matrix\n";
+
     Triple s;
     is >> s.row >> s.col >> s.value;
     int p = max(s.row, s.col);

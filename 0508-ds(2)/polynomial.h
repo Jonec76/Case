@@ -2,6 +2,9 @@
 #include<string>
 #include<vector>
 #include<math.h>
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define RESET   "\033[0m"
 using namespace std;
 
 template < class T > class Chain;  // 前向宣告
@@ -33,15 +36,7 @@ class CircularList {
     friend class Polynomial;
     public: 
         CircularList();
-        ~CircularList(){
-            ChainNode<T>* cur = av;
-            int ctr = 0;
-            while(cur){
-                cur = cur->link;
-                ctr++;
-            }
-            cout<<"av size: "<<ctr<<"\n";
-        };
+        ~CircularList(){};
         ChainNode<T>* GetNode();
         void RetNode(ChainNode<T>*& );
         void Insert(ChainNode<T> *x);
@@ -51,6 +46,23 @@ class CircularList {
         ChainNode<T>* first;
         ChainNode<T>* last;
         ChainNode<T>* av;
+};
+
+class Polynomial{ 
+    public:
+        friend istream& operator>>(istream&, Polynomial&); // (a)
+        friend ostream& operator<<(ostream&, Polynomial&); // (b)
+        Polynomial(const Polynomial&);// (c)
+        Polynomial& operator=(const Polynomial& b); // (D)
+        ~Polynomial(); // (E)
+        Polynomial& operator+(const Polynomial& b) const; // (F)
+        Polynomial& operator-(const Polynomial& b) const; // (G)
+        Polynomial& operator*(const Polynomial& b) const; // (H)
+        Polynomial& operator+=(const Polynomial& b); // function for supporting operator *
+        double Evaluate(double) const; //(i)
+        Polynomial(){};
+    private: 
+        CircularList<struct Term> poly;
 };
 
 
@@ -63,10 +75,9 @@ void CircularList<T>::print_list(ostream& out){
     ChainNode<T>* tmp = first->link;
     while(tmp!=first){
         Term t = tmp->get_data();
-        out<<t.coef<<" "<<t.exp<<"\n";
+        out<<GREEN<<t.coef<<" "<<t.exp<<RESET<<"\n";
         tmp = tmp->link;
     }
-
 }
 
 template <class T>
@@ -140,26 +151,12 @@ void CircularList<T>::RetNode(ChainNode<T>*& x) {// Free the node pointed to by 
     x = 0; // not delete x
 }
 
-class Polynomial{ 
-    public:
-        friend istream& operator>>(istream&, Polynomial&); 
-        friend ostream& operator<<(ostream&, Polynomial&); 
-        Polynomial& operator+=(const Polynomial& b);
-        Polynomial& operator=(const Polynomial& b) const;
-        Polynomial& operator+(const Polynomial& b) const;
-        Polynomial& operator-(const Polynomial& b) const;
-        Polynomial& operator*(const Polynomial& b) const;
-        double Evaluate(double) const;
-        Polynomial(const Polynomial&);
-        Polynomial(){};
-        ~Polynomial(); // call poly deconstructure would cause circularlist deconstructure as well;
-        CircularList<struct Term> poly;
-    private: 
-};
+
 
 
 istream& operator>>(istream& is, Polynomial& p)
 {
+    cout<<"Read input file and construct Polynomial\n";
     int len;
     is >> len;
     for(int i=0;i<len;i++){
@@ -178,7 +175,8 @@ ostream& operator<<(ostream& out, Polynomial& p){
     return out;
 }
 
- Polynomial::Polynomial(const Polynomial& a){
+Polynomial::Polynomial(const Polynomial& a){
+    cout<<"Copy constructor\n";
     int len = a.poly.size;
     ChainNode<Term>* cur = a.poly.first->link;
     for(int i=0;i<len;i++){
@@ -206,24 +204,26 @@ Polynomial& Polynomial::operator+=(const Polynomial& b){
 }
 
 
-Polynomial& Polynomial::operator=(const Polynomial& a) const{
-    Polynomial* c = new Polynomial();
-
-    int len = a.poly.size;
-    ChainNode<Term>* cur = a.poly.first->link;
-
+Polynomial& Polynomial::operator=(const Polynomial& a){
+    cout<<"Assign polynomial\n";
+    cout<<"(Create and copy a new polynomial)";
+    Polynomial* c = new Polynomial(a);
+    cout<<"(Deconstruct the original polynomial)";
+    this->~Polynomial();
+    int len = c->poly.size;
+    ChainNode<Term>* cur = c->poly.first->link;
     for(int i=0;i<len;i++){
-        ChainNode<Term>* x = c->poly.GetNode();
-
+        ChainNode<Term>* x = this->poly.GetNode();
         x->set_data(cur->get_data());
-        c->poly.Insert(x);
+        this->poly.Insert(x);
         cur = cur->link;
     }
-    c->poly.size = a.poly.size;
-    return *c;
+    return *this;
 }
 
 Polynomial& Polynomial::operator+(const Polynomial& b) const {
+    cout<<"Add polynomial\n";
+
     Polynomial* c = new Polynomial();
     if(b.poly.size == 0){
         Polynomial* ret = new Polynomial(*this);
@@ -275,12 +275,12 @@ Polynomial& Polynomial::operator+(const Polynomial& b) const {
         cur2 = cur2->link;
         c->poly.Insert(n);
     }
-
-    
     return *c;
 }
 
 Polynomial& Polynomial::operator-(const Polynomial& b) const {
+    cout<<"Subtract polynomial\n";
+
     Polynomial* c = new Polynomial();
 
     ChainNode<Term>* cur1 = (*this).poly.first->link;
@@ -325,12 +325,12 @@ Polynomial& Polynomial::operator-(const Polynomial& b) const {
         cur2 = cur2->link;
         c->poly.Insert(n);
     }
-
-    
     return *c;
 }
 
 Polynomial& Polynomial::operator*(const Polynomial& b) const {
+    cout<<"Multiply polynomial\n";
+
     Polynomial* c = new Polynomial();
 
     ChainNode<Term>* cur1 = this->poly.first->link;
@@ -359,18 +359,16 @@ Polynomial& Polynomial::operator*(const Polynomial& b) const {
             n->set_data(prod);
             tmp->poly.Insert(n);
             cur2 = cur2->link;
-            // cout<<"r"<<c2<<endl;
         }
-        // tmp->poly.print_list(cout);
         *c += *tmp;
-        // (*c).poly.print_list(cout);
-        // cout<<c->poly.size<<"????";
         cur1 = cur1->link;
     }
     return *c;
 }
 
 Polynomial::~Polynomial() {
+    cout<<"Deconstruct polynomial\n";
+
     if(poly.last) {
         ChainNode<Term>* x = poly.last->link;
         poly.last->link = poly.av; // last node linked to av av = x;
@@ -381,12 +379,17 @@ Polynomial::~Polynomial() {
 }
 
 double Polynomial::Evaluate(double x) const{
+    cout<<"Evaluate polynomial\n";
+
     ChainNode<Term>* cur = poly.first->link;
     
     double value = 0;
+    char c = '+';
     while(cur != poly.first){
         Term t = cur->get_data();
-        cout<<t.coef<<" "<<t.exp<<endl;
+        if(cur->link == poly.first)
+            c = '=';
+        printf("(%.2f * %.2f ^ %d) %c ", t.coef, x, t.exp, c);
         value += t.coef * pow(x, t.exp);
         cur = cur->link;
     }
